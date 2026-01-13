@@ -1,18 +1,19 @@
-from django.db import IntegrityError
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.db import IntegrityError
 
-from .models import Like, Post
+from .models import Post, Like
+from .serializers import PostSerializer, MeSerializer
 from .permissions import IsOwnerOrReadOnly
-from .serializers import PostSerializer
 
-from django.contrib.auth.models import User
+from rest_framework.generics import RetrieveAPIView
 from .models import Profile
 from .serializers import ProfileSerializer
 
-from rest_framework.generics import RetrieveAPIView
+
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -41,14 +42,18 @@ class PostViewSet(viewsets.ModelViewSet):
         return Response({"detail": "Not liked"}, status=status.HTTP_200_OK)
 
 
-class ProfileDetailView(RetrieveAPIView):
-    serialzer_class = ProfileSerializer
-    lookup_field = "user_username"
-    lookup_url_kwarg = "username"
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = MeSerializer(request.user, context={"request": request})
+        return Response(serializer.data)
     
+    
+class ProfileDetailView(RetrieveAPIView):
+    serializer_class = ProfileSerializer
+    lookup_field = "user__username"
+    lookup_url_kwarg = "username"
+
     def get_queryset(self):
         return Profile.objects.select_related("user")
-
-
-
-    
