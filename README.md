@@ -32,4 +32,3 @@ This project demonstrates real-world backend concepts including authentication, 
 
 This API uses **JWT authentication**.
 
-### Obtain a token
