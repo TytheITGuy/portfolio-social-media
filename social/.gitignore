@@ -12,3 +12,11 @@ db.sqlite3
 # IDE
 .vscode/
 .idea/
+
+
+# Local DB
+db.sqlite3
+
+# Secrets
+.env
+*.txt
