@@ -4,7 +4,26 @@
     <title>Profile</title>
 </head>
 <body>
-    <h1>Profile: {{ username }}</h1>
-    <p>This page will load profile data from the API.</p>
+<h1 id="username"></h1>
+<p id="bio"></p>
+
+<script>
+  const username = "{{ username }}";
+
+  fetch(`/api/profiles/${username}/`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Profile not found");
+      }
+      return response.json();
+    })
+    .then(data => {
+      document.getElementById("username").innerText = data.user;
+      document.getElementById("bio").innerText = data.bio || "No bio yet";
+    })
+    .catch(error => {
+      document.body.innerHTML = "<h2>Profile not found</h2>";
+    });
+</script>
 </body>
 </html>
