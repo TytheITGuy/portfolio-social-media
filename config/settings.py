@@ -120,9 +120,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-LOGIN_REDIRECT_URL = "/api/"
-LOGOUT_REDIRECT_URL = "/api/"
-
+LOGOUT_REDIRECT_URL = "login"
+LOGIN_REDIRECT_URL = "feed"
+LOGIN_URL = "/login/"
 
 
 REST_FRAMEWORK = {

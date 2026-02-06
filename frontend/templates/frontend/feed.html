@@ -1,2 +1,14 @@
 <h1>Feed<h1>
 <p>Frontend is working.</p>
+
+
+{% if user.is_authenticated %}
+  <p>
+    Logged in as {{ user.username }}
+  </p>
+
+  <form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+  </form>
+{% endif %}

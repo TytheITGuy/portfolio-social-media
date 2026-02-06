@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Portfolio Social</title>
+</head>
+<body>
+    <h1>Welcome, {{ user.username }}</h1>
+
+    <p>This is the frontend talking to Django.</p>
+
+    {% if user.is_authenticated %}
+        <a href="/profile/{{ user.username }}/">My Profile</a>
+        <a href="/logout/">Logout</a>
+    {% else %}
+        <a href="/login/">Login</a>
+    {% endif %}
+</body>
+</html>
