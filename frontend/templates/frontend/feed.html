@@ -1,6 +1,5 @@
-<h1>Feed<h1>
+<h1>Feed</h1>
 <p>Frontend is working.</p>
-
 
 {% if user.is_authenticated %}
   <p>
@@ -12,3 +11,104 @@
     <button type="submit">Logout</button>
   </form>
 {% endif %}
+
+<hr>
+{% if user.is_authenticated %}
+  <h2>Create a post</h2>
+
+  <form id="post-form">
+    {% csrf_token %}
+    <textarea
+      id="post-content"
+      rows="3"
+      maxlength="280"
+      placeholder="What's on your mind?"
+      required
+    ></textarea>
+    <br>
+    <button type="submit">Post</button>
+  </form>
+
+  <hr>
+{% endif %}
+
+
+<h2>Posts</h2>
+<div id="posts"></div>
+
+<script>
+  fetch("/api/posts/")
+    .then(response => response.json())
+    .then(data => {
+      const postsDiv = document.getElementById("posts");
+
+      if (data.length === 0) {
+        postsDiv.innerHTML = "<p>No posts yet.</p>";
+        return;
+      }
+
+      data.forEach(post => {
+        const postDiv = document.createElement("div");
+        postDiv.innerHTML = `
+          <p><strong>${post.author_username}</strong></p>
+          <p>${post.content}</p>
+          <small>${post.created_at}</small>
+          <hr>
+        `;
+        postsDiv.appendChild(postDiv);
+      });
+    })
+    .catch(error => {
+      console.error("Error loading posts:", error);
+    });
+</script>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.startsWith(name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+const csrftoken = getCookie("csrftoken");
+const postForm = document.getElementById("post-form");
+
+if (postForm) {
+  postForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const content = document.getElementById("post-content").value;
+
+    fetch("/api/posts/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrftoken
+      },
+      body: JSON.stringify({ content })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Failed to create post");
+      }
+      return response.json();
+    })
+    .then(() => {
+      document.getElementById("post-content").value = "";
+      location.reload();
+    })
+    .catch(error => {
+      console.error("Error creating post:", error);
+    });
+  });
+}
+</script>

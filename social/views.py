@@ -17,9 +17,18 @@ from .serializers import ProfileSerializer
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all().order_by("-created_at")
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        queryset = Post.objects.all().order_by("-created_at")
+
+        username = self.request.query_params.get("username")
+
+        if username:
+            queryset = queryset.filter(author__username=username)
+
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
