@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from .models import Post, Profile
+from .models import Post, Profile, Like
 
 User = get_user_model()
 
@@ -33,9 +33,11 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_liked_by_me(self, obj):
         request = self.context.get("request")
-        if request and request.user and request.user.is_authenticated:
-            return obj.likes.filter(user=request.user).exists()
-        return False
+
+        if not request or not request.user.is_authenticated:
+            return False
+
+        return Like.objects.filter(post=obj, user=request.user).exists()
 
 
 class ProfileSerializer(serializers.ModelSerializer):

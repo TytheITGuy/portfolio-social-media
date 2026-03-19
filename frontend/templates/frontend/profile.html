@@ -35,7 +35,9 @@
 
 
 function loadPosts(username) {
-  fetch(`/api/posts/?username=${username}`)
+  fetch(`/api/posts/?username=${username}`, {
+    credentials: "same-origin"
+  })
     .then(response => {
       if (!response.ok) {
         throw new Error("Posts failed to load");
@@ -56,18 +58,70 @@ function renderPosts(posts) {
 
   posts.forEach(post => {
     const div = document.createElement("div");
-    div.classList.add("post");
 
     div.innerHTML = `
       <h3>${post.author_username}</h3>
       <p>${post.content}</p>
       <small>${new Date(post.created_at).toLocaleString()}</small>
+      <br>
+      <button class="like-btn" data-id="${post.id}" data-liked="${post.liked_by_me}">
+        ${post.liked_by_me ? "Unlike" : "Like"}
+      </button>
       <hr>
     `;
 
     container.appendChild(div);
   });
+
+  attachLikeHandlers();
 }
+
+function toggleLike(postId, liked) {
+  const method = liked ? "DELETE" : "POST";
+  const url = liked
+    ? `/api/posts/${postId}/unlike/`
+    : `/api/posts/${postId}/like/`;
+
+  fetch(url, {
+    method,
+    credentials: "same-origin"
+  })
+    .then(() => location.reload())
+    .catch(err => console.log(err));
+}
+
+
+function attachLikeHandlers() {
+  document.querySelectorAll(".like-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const postId = btn.dataset.id;
+      const liked = btn.dataset.liked === "true";
+
+      const method = liked ? "DELETE" : "POST";
+      const url = liked
+        ? `/api/posts/${postId}/unlike/`
+        : `/api/posts/${postId}/like/`;
+
+      fetch(url, {
+      method,
+      credentials: "same-origin",
+      headers: {
+       "X-CSRFToken": getCSRFToken()
+  }
+})
+        .then(() => location.reload())
+        .catch(err => console.log(err));
+    });
+  });
+}
+
+function getCSRFToken() {
+  return document.cookie
+    .split("; ")
+    .find(row => row.startsWith("csrftoken="))
+    ?.split("=")[1];
+}
+
 </script>
 </body>
 </html>
