@@ -62,11 +62,17 @@ function renderPosts(posts) {
     div.innerHTML = `
       <h3>${post.author_username}</h3>
       <p>${post.content}</p>
+
       <small>${new Date(post.created_at).toLocaleString()}</small>
       <br>
+
+      <strong>Likes: <span class="like-count">${post.like_count}</span></strong>
+      <br>
+
       <button class="like-btn" data-id="${post.id}" data-liked="${post.liked_by_me}">
-        ${post.liked_by_me ? "Unlike" : "Like"}
+      ${post.liked_by_me ? "Unlike" : "Like"}
       </button>
+
       <hr>
     `;
 
@@ -103,14 +109,32 @@ function attachLikeHandlers() {
         : `/api/posts/${postId}/like/`;
 
       fetch(url, {
-      method,
-      credentials: "same-origin",
-      headers: {
-       "X-CSRFToken": getCSRFToken()
-  }
-})
-        .then(() => location.reload())
-        .catch(err => console.log(err));
+        method,
+        credentials: "same-origin",
+        headers: {
+          "X-CSRFToken": getCSRFToken()
+        }
+      })
+      .then(() => {
+        // ⭐ LIVE UI UPDATE STARTS HERE
+
+        let countEl = btn.parentElement.querySelector(".like-count");
+
+        let currentCount = parseInt(countEl.innerText);
+
+        if (liked) {
+          currentCount -= 1;
+          btn.innerText = "Like";
+          btn.dataset.liked = "false";
+        } else {
+          currentCount += 1;
+          btn.innerText = "Unlike";
+          btn.dataset.liked = "true";
+        }
+
+        countEl.innerText = currentCount;
+      })
+      .catch(err => console.log(err));
     });
   });
 }

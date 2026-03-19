@@ -8,8 +8,8 @@ User = get_user_model()
 
 class PostSerializer(serializers.ModelSerializer):
     author_username = serializers.ReadOnlyField(source="author.username")
-    like_count = serializers.IntegerField(source="likes.count", read_only=True)
     liked_by_me = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -39,6 +39,9 @@ class PostSerializer(serializers.ModelSerializer):
 
         return Like.objects.filter(post=obj, user=request.user).exists()
 
+
+    def get_like_count(self, obj):
+        return Like.objects.filter(post=obj).count()
 
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source="user.username")
