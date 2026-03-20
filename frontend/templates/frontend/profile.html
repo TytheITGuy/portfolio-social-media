@@ -4,52 +4,45 @@
     <title>Profile</title>
 </head>
 <body>
+
 <h1 id="username"></h1>
 <p id="bio"></p>
+
+<h2>Create Post</h2>
+<textarea id="post-content" rows="3" cols="40"></textarea>
+<br>
+<button id="create-post-btn">Post</button>
+<hr>
 
 <div id="posts">
     <h2>Posts</h2>
     <div id="posts-container"></div>
 </div>
 
-
 <script>
-  const username = "{{ username }}";
+const username = "{{ username }}";
 
-  fetch(`/api/profiles/${username}/`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error("Profile not found");
-      }
-      return response.json();
-    })
-    .then(data => {
+function getCSRFToken() {
+  return document.cookie
+    .split("; ")
+    .find(row => row.startsWith("csrftoken="))
+    ?.split("=")[1];
+}
+
+fetch(`/api/profiles/${username}/`)
+.then(res => res.json())
+.then(data => {
     document.getElementById("username").innerText = data.username;
-    document.getElementById("bio").innerText = data.bio || "No bio yet";
-
+    document.getElementById("bio").innerText = data.bio;
     loadPosts(data.username);
-})
-    .catch(error => {
-      document.body.innerHTML = "<h2>Profile not found</h2>";
-    });
-
+});
 
 function loadPosts(username) {
   fetch(`/api/posts/?username=${username}`, {
     credentials: "same-origin"
   })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error("Posts failed to load");
-      }
-      return response.json();
-    })
-    .then(data => {
-      renderPosts(data.results);
-    })
-    .catch(err => {
-      console.log(err);
-    });
+  .then(res => res.json())
+  .then(data => renderPosts(data.results));
 }
 
 function renderPosts(posts) {
@@ -62,17 +55,11 @@ function renderPosts(posts) {
     div.innerHTML = `
       <h3>${post.author_username}</h3>
       <p>${post.content}</p>
-
-      <small>${new Date(post.created_at).toLocaleString()}</small>
-      <br>
-
-      <strong>Likes: <span class="like-count">${post.like_count}</span></strong>
-      <br>
-
+      <small>${new Date(post.created_at).toLocaleString()}</small><br>
+      <strong>Likes: <span class="like-count">${post.like_count}</span></strong><br>
       <button class="like-btn" data-id="${post.id}" data-liked="${post.liked_by_me}">
-      ${post.liked_by_me ? "Unlike" : "Like"}
+        ${post.liked_by_me ? "Unlike" : "Like"}
       </button>
-
       <hr>
     `;
 
@@ -81,21 +68,6 @@ function renderPosts(posts) {
 
   attachLikeHandlers();
 }
-
-function toggleLike(postId, liked) {
-  const method = liked ? "DELETE" : "POST";
-  const url = liked
-    ? `/api/posts/${postId}/unlike/`
-    : `/api/posts/${postId}/like/`;
-
-  fetch(url, {
-    method,
-    credentials: "same-origin"
-  })
-    .then(() => location.reload())
-    .catch(err => console.log(err));
-}
-
 
 function attachLikeHandlers() {
   document.querySelectorAll(".like-btn").forEach(btn => {
@@ -116,36 +88,48 @@ function attachLikeHandlers() {
         }
       })
       .then(() => {
-        // ⭐ LIVE UI UPDATE STARTS HERE
-
         let countEl = btn.parentElement.querySelector(".like-count");
-
-        let currentCount = parseInt(countEl.innerText);
+        let count = parseInt(countEl.innerText);
 
         if (liked) {
-          currentCount -= 1;
+          count--;
           btn.innerText = "Like";
           btn.dataset.liked = "false";
         } else {
-          currentCount += 1;
+          count++;
           btn.innerText = "Unlike";
           btn.dataset.liked = "true";
         }
 
-        countEl.innerText = currentCount;
-      })
-      .catch(err => console.log(err));
+        countEl.innerText = count;
+      });
     });
   });
 }
 
-function getCSRFToken() {
-  return document.cookie
-    .split("; ")
-    .find(row => row.startsWith("csrftoken="))
-    ?.split("=")[1];
+function createPost() {
+  const content = document.getElementById("post-content").value;
+
+  fetch("/api/posts/", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCSRFToken()
+    },
+    body: JSON.stringify({ content })
+  })
+  .then(res => res.json())
+  .then(() => {
+    document.getElementById("post-content").value = "";
+    loadPosts(username);
+  });
 }
 
+document.getElementById("create-post-btn")
+  .addEventListener("click", createPost);
+
 </script>
+
 </body>
 </html>
