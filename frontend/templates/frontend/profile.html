@@ -42,33 +42,37 @@ function loadPosts(username) {
     credentials: "same-origin"
   })
   .then(res => res.json())
-  .then(data => renderPosts(data.results));
+  .then(data => renderPosts(data.results, true));
 }
 
-function renderPosts(posts) {
+function renderPosts(posts, isProfilePage = false) {
   const container = document.getElementById("posts-container");
   container.innerHTML = "";
 
   posts.forEach(post => {
     const div = document.createElement("div");
+    div.classList.add("post-card");
 
-  div.innerHTML = `
-    <h3>${post.author_username}</h3>
-    <p>${post.content}</p>
-    <small>${new Date(post.created_at).toLocaleString()}</small><br>
+    div.innerHTML = `
+      <div><strong>${post.author_username}</strong></div>
+      <div>${new Date(post.created_at).toLocaleString()}</div>
+      <p>${post.content}</p>
 
-    <strong>Likes: <span class="like-count">${post.like_count}</span></strong><br>
+      <strong>Likes: <span class="like-count">${post.like_count}</span></strong>
+      <br><br>
 
-   <button class="like-btn" data-id="${post.id}" data-liked="${post.liked_by_me}">
-      ${post.liked_by_me ? "Unlike" : "Like"}
-    </button>
+      <button class="like-btn"
+        data-id="${post.id}"
+        data-liked="${post.liked_by_me}">
+        ${post.liked_by_me ? "Unlike" : "Like"}
+      </button>
 
-    <br><br>
-    <button class="edit-btn" data-id="${post.id}">Edit</button>
-    <button class="delete-btn" data-id="${post.id}">Delete</button>
-
-    <hr>
-`;
+      ${(isProfilePage || post.author === CURRENT_USER_ID) ? `
+        <br><br>
+        <button class="edit-btn" data-id="${post.id}">Edit</button>
+        <button class="delete-btn" data-id="${post.id}">Delete</button>
+      ` : ""}
+    `;
 
     container.appendChild(div);
   });
@@ -117,9 +121,6 @@ function attachLikeHandlers() {
 }
 
 
-document.getElementById("create-post-btn")
-  .addEventListener("click", createPost);
-
 
 function getCSRFToken() {
   return document.cookie
@@ -146,9 +147,13 @@ document.getElementById('create-post-btn')
         body: JSON.stringify({ content })
       });
 
-      const newPost = await response.json();
+      const newPost = await response.json(); // 👈 THIS was missing
 
-      addPostToTop(newPost); // 👈 THIS updates UI instantly
+      addPostToTop({
+        ...newPost,
+        like_count: 0,
+        liked_by_me: false
+      });
 
       document.getElementById('post-content').value = '';
 
@@ -156,7 +161,6 @@ document.getElementById('create-post-btn')
       console.error(err);
     }
 });
-
 function addPostToTop(post) {
   const container = document.getElementById('posts-container');
 
