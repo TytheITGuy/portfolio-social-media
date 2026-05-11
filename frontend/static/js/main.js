@@ -1,98 +1,3 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Feed</title>
-
-    <style>
-        body {
-            background: #f4f6f8;
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0;
-        }
-
-        .feed-container {
-            width: 600px;
-            margin: 40px auto;
-        }
-
-        .post-card {
-            background: white;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .post-author {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .post-time {
-            color: gray;
-            font-size: 12px;
-            margin-bottom: 10px;
-        }
-
-        .like-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .like-btn:hover {
-            background: #0056b3;
-        }
-
-
-
-
-  
-        .navbar {
-          background: #222;
-          color: white;
-          padding: 12px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-}
-
-        .navbar a {
-          color: white;
-          margin-left: 15px;
-          text-decoration: none;
-        }
-    </style>
-</head>
-
-<body>
-
-
-<div class="navbar">
-
-  <div class="logo">
-    <strong>SocialApp</strong>
-  </div>
-
-  <div class="nav-links">
-    <a href="/feed/">Feed</a>
-    <a href="/profile/admin/">Profile</a>
-    <a href="/logout/">Logout</a>
-  </div>
-
-</div>
-
-<div class="feed-container">
-    <h2>Global Feed</h2>
-    <div id="feed-posts"></div>
-</div>
-
-<script>
-
 function getCSRFToken() {
   return document.cookie
     .split("; ")
@@ -100,16 +5,8 @@ function getCSRFToken() {
     ?.split("=")[1];
 }
 
-function loadFeed() {
-  fetch("/api/posts/", {
-    credentials: "same-origin"
-  })
-  .then(res => res.json())
-  .then(data => renderFeed(data.results));
-}
-
-function renderFeed(posts) {
-  const container = document.getElementById("feed-posts");
+function renderPosts(posts, isProfilePage = false) {
+  const container = document.getElementById("posts-container");
   container.innerHTML = "";
 
   posts.forEach(post => {
@@ -117,8 +14,8 @@ function renderFeed(posts) {
     div.classList.add("post-card");
 
     div.innerHTML = `
-      <div class="post-author">${post.author_username}</div>
-      <div class="post-time">${new Date(post.created_at).toLocaleString()}</div>
+      <div><strong>${post.author_username}</strong></div>
+      <div>${new Date(post.created_at).toLocaleString()}</div>
       <p>${post.content}</p>
 
       <strong>Likes: <span class="like-count">${post.like_count}</span></strong>
@@ -130,15 +27,10 @@ function renderFeed(posts) {
         ${post.liked_by_me ? "Unlike" : "Like"}
       </button>
 
-      ${post.author === CURRENT_USER_ID ? `
+      ${(isProfilePage || post.author === CURRENT_USER_ID) ? `
         <br><br>
-        <button class="edit-btn" data-id="${post.id}">
-          Edit
-        </button>
-
-        <button class="delete-btn" data-id="${post.id}">
-          Delete
-        </button>
+        <button class="edit-btn" data-id="${post.id}">Edit</button>
+        <button class="delete-btn" data-id="${post.id}">Delete</button>
       ` : ""}
     `;
 
@@ -147,8 +39,9 @@ function renderFeed(posts) {
 
   attachLikeHandlers();
   attachDeleteHandlers();
-  attachEditHandlers();   
+  attachEditHandlers();
 }
+
 function attachLikeHandlers() {
   document.querySelectorAll(".like-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -186,17 +79,6 @@ function attachLikeHandlers() {
     });
   });
 }
-
-let CURRENT_USER_ID = null;
-
-fetch("/api/me/", {
-  credentials: "same-origin"
-})
-.then(res => res.json())
-.then(data => {
-  CURRENT_USER_ID = data.id;
-  loadFeed();
-});
 
 
 function attachDeleteHandlers() {
@@ -269,11 +151,35 @@ function attachEditHandlers() {
 
   });
 }
+function addPostToTop(post) {
+  const container = document.getElementById('posts-container');
+  container.innerHTML = "";
+
+  const div = document.createElement("div");
+  div.classList.add("post-card");
+
+  div.innerHTML = `
+    <strong>${post.author_username}</strong><br>
+    <p>${post.content}</p>
+    <small>${new Date(post.created_at).toLocaleString()}</small>
+    <br>
+
+    <strong>Likes: <span class="like-count">0</span></strong>
+    <br><br>
+
+    <button class="like-btn" data-id="${post.id}" data-liked="false">
+      Like
+    </button>
+
+    <br><br>
+    <button class="edit-btn" data-id="${post.id}">Edit</button>
+    <button class="delete-btn" data-id="${post.id}">Delete</button>
+  `;
+
+  container.prepend(div);
 
 
-</script>
-
-<script src="{% static 'js/main.js' %}"></script>
-
-</body>
-</html>
+  attachLikeHandlers();
+  attachDeleteHandlers();
+  attachEditHandlers();
+}

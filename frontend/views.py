@@ -9,7 +9,9 @@ def login_view(request):
     return render(request, "frontend/login.html")
 
 def profile_view(request, username):
-    return render(request, "frontend/profile.html", {"username": username})
+    return render(request, "frontend/profile.html", {
+        "username": username
+    })
 
 def home(request):
     return render(request, "frontend/home.html")

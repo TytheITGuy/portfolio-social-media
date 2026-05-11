@@ -1,276 +1,196 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Profile</title>
+
+    <style>
+    body {
+      background: #f4f6f8;
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+    }
+
+    .navbar {
+      background: #222;
+      color: white;
+      padding: 12px 24px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 25px;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+    }
+
+    .nav-links a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      width: 600px;
+      margin: 40px auto;
+    }
+
+    .profile-card,
+    .post-card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+    </style>
 </head>
+
 <body>
 
-<h1 id="username"></h1>
-<p id="bio"></p>
+<div class="navbar">
 
-<h2>Create Post</h2>
-<textarea id="post-content" rows="3" cols="40"></textarea>
-<br>
-<button id="create-post-btn">Post</button>
-<hr>
+  <div class="logo">
+    <strong>SocialApp</strong>
+  </div>
 
-<div id="posts">
-    <h2>Posts</h2>
-    <div id="posts-container"></div>
+  <div class="nav-links">
+    <a href="/feed/">Feed</a>
+    <a href="/profile/{{ username }}/">Profile</a>
+    <a href="/logout/">Logout</a>
+  </div>
+
 </div>
 
+<div class="container">
+
+  <div class="profile-card">
+    <h1 id="username"></h1>
+    <p id="bio"></p>
+  </div>
+
+  <div class="profile-card">
+    <h2>Create Post</h2>
+
+    <textarea id="post-content" rows="3"></textarea>
+
+    <br><br>
+
+    <button id="create-post-btn">Post</button>
+  </div>
+
+  <h2>Posts</h2>
+
+  <div id="posts-container"></div>
+
+</div>
+
+<script src="{% static 'js/main.js' %}"></script>
+
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
+let CURRENT_USER_ID = null;
 const username = "{{ username }}";
 
-function getCSRFToken() {
-  return document.cookie
-    .split("; ")
-    .find(row => row.startsWith("csrftoken="))
-    ?.split("=")[1];
-}
+fetch("/api/me/", {
+  credentials: "same-origin"
+})
+.then(res => res.json())
+.then(user => {
 
-fetch(`/api/profiles/${username}/`)
+  CURRENT_USER_ID = user.id;
+
+  return fetch(`/api/profiles/${username}/`);
+
+})
 .then(res => res.json())
 .then(data => {
-    document.getElementById("username").innerText = data.username;
-    document.getElementById("bio").innerText = data.bio;
-    loadPosts(data.username);
+
+  document.getElementById("username").innerText = data.username;
+  document.getElementById("bio").innerText = data.bio;
+
+  loadPosts(data.username);
+
 });
 
 function loadPosts(username) {
+
   fetch(`/api/posts/?username=${username}`, {
     credentials: "same-origin"
   })
   .then(res => res.json())
-  .then(data => renderPosts(data.results, true));
-}
+  .then(data => {
 
-function renderPosts(posts, isProfilePage = false) {
-  const container = document.getElementById("posts-container");
-  container.innerHTML = "";
+    renderPosts(data.results, true);
 
-  posts.forEach(post => {
-    const div = document.createElement("div");
-    div.classList.add("post-card");
-
-    div.innerHTML = `
-      <div><strong>${post.author_username}</strong></div>
-      <div>${new Date(post.created_at).toLocaleString()}</div>
-      <p>${post.content}</p>
-
-      <strong>Likes: <span class="like-count">${post.like_count}</span></strong>
-      <br><br>
-
-      <button class="like-btn"
-        data-id="${post.id}"
-        data-liked="${post.liked_by_me}">
-        ${post.liked_by_me ? "Unlike" : "Like"}
-      </button>
-
-      ${(isProfilePage || post.author === CURRENT_USER_ID) ? `
-        <br><br>
-        <button class="edit-btn" data-id="${post.id}">Edit</button>
-        <button class="delete-btn" data-id="${post.id}">Delete</button>
-      ` : ""}
-    `;
-
-    container.appendChild(div);
   });
 
-  attachLikeHandlers();
-  attachDeleteHandlers();
-  attachEditHandlers();
 }
 
-function attachLikeHandlers() {
-  document.querySelectorAll(".like-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const postId = btn.dataset.id;
-      const liked = btn.dataset.liked === "true";
+document.getElementById("create-post-btn")
+.addEventListener("click", async () => {
 
-      const method = liked ? "DELETE" : "POST";
-      const url = liked
-        ? `/api/posts/${postId}/unlike/`
-        : `/api/posts/${postId}/like/`;
+  const content =
+    document.getElementById("post-content").value;
 
-      fetch(url, {
-        method,
-        credentials: "same-origin",
-        headers: {
-          "X-CSRFToken": getCSRFToken()
-        }
-      })
-      .then(() => {
-        let countEl = btn.parentElement.querySelector(".like-count");
-        let count = parseInt(countEl.innerText);
+  if (!content.trim()) return;
 
-        if (liked) {
-          count--;
-          btn.innerText = "Like";
-          btn.dataset.liked = "false";
-        } else {
-          count++;
-          btn.innerText = "Unlike";
-          btn.dataset.liked = "true";
-        }
-
-        countEl.innerText = count;
-      });
-    });
+  const response = await fetch("/api/posts/", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCSRFToken()
+    },
+    body: JSON.stringify({ content })
   });
-}
 
+  const newPost = await response.json();
 
+  addPostToTop({
+    ...newPost,
+    like_count: 0,
+    liked_by_me: false
+  });
 
-function getCSRFToken() {
-  return document.cookie
-    .split("; ")
-    .find(row => row.startsWith("csrftoken="))
-    ?.split("=")[1];
-}
+  document.getElementById("post-content").value = "";
 
-document.getElementById('create-post-btn')
-  .addEventListener('click', async () => {
-
-    const content = document.getElementById('post-content').value;
-
-    if (!content.trim()) return;
-
-    try {
-      const response = await fetch('/api/posts/', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCSRFToken()
-        },
-        body: JSON.stringify({ content })
-      });
-
-      const newPost = await response.json(); // 👈 THIS was missing
-
-      addPostToTop({
-        ...newPost,
-        like_count: 0,
-        liked_by_me: false
-      });
-
-      document.getElementById('post-content').value = '';
-
-    } catch (err) {
-      console.error(err);
-    }
 });
-function addPostToTop(post) {
-  const container = document.getElementById('posts-container');
 
-  const div = document.createElement("div");
-  div.classList.add("post");
-
-  div.innerHTML = `
-    <strong>${post.author_username}</strong><br>
-    <p>${post.content}</p>
-    <small>${new Date(post.created_at).toLocaleString()}</small>
-    <br>
-
-    <strong>Likes: <span class="like-count">0</span></strong>
-    <br><br>
-
-    <button class="like-btn" data-id="${post.id}" data-liked="false">
-      Like
-    </button>
-
-    <br><br>
-    <button class="edit-btn" data-id="${post.id}">Edit</button>
-    <button class="delete-btn" data-id="${post.id}">Delete</button>
-  `;
-
-  container.prepend(div);
-
-
-  attachLikeHandlers();
-  attachDeleteHandlers();
-  attachEditHandlers();
-}
-
-function attachDeleteHandlers() {
-  document.querySelectorAll(".delete-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-
-      const postId = btn.dataset.id;
-
-      fetch(`/api/posts/${postId}/`, {
-        method: "DELETE",
-        credentials: "same-origin",
-        headers: {
-          "X-CSRFToken": getCSRFToken()
-        }
-      })
-      .then(() => {
-        btn.closest("div").remove();
-      });
-
-    });
-  });
-}
-
-function attachEditHandlers() {
-  document.querySelectorAll(".edit-btn").forEach(btn => {
-
-    btn.addEventListener("click", () => {
-
-      const card = btn.closest("div");
-      const contentEl = card.querySelector("p");
-
-      const originalText = contentEl.innerText;
-
-      contentEl.innerHTML = `
-        <textarea class="edit-area">${originalText}</textarea>
-        <br>
-        <button class="save-btn">Save</button>
-      `;
-
-      btn.style.display = "none";
-
-      card.querySelector(".save-btn")
-        .addEventListener("click", () => {
-
-          const newContent =
-            card.querySelector(".edit-area").value;
-
-          const postId = btn.dataset.id;
-
-          fetch(`/api/posts/${postId}/`, {
-            method: "PATCH",
-            credentials: "same-origin",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": getCSRFToken()
-            },
-            body: JSON.stringify({ content: newContent })
-          })
-          .then(res => res.json())
-          .then(updated => {
-
-            contentEl.innerHTML = updated.content;
-            btn.style.display = "inline";
-
-          });
-
-        });
-
-    });
-
-  });
-}
-
-
-
-
+});
 </script>
-
-
-
 
 </body>
 </html>
