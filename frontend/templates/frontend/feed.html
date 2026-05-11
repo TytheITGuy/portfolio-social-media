@@ -6,23 +6,63 @@
 
     <style>
         body {
-            background: #f4f6f8;
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0;
-        }
+    background:
+      linear-gradient(
+        135deg,
+        #eef2ff 0%,
+        #f5f7fb 40%,
+        #e0e7ff 100%
+      );
 
-        .feed-container {
-            width: 600px;
-            margin: 40px auto;
-        }
+    font-family: Arial, Helvetica, sans-serif;
 
-        .post-card {
-            background: white;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+    margin: 0;
+
+    min-height: 100vh;
+}
+
+h1, h2 {
+    color: #111827;
+}
+
+p {
+    color: #374151;
+    line-height: 1.6;
+}
+
+
+
+        .feed-container,
+        .container {
+          width: 700px;
+          margin: 40px auto;
+}
+
+        .post-card,
+        .profile-card {
+          background: white;
+
+          backdrop-filter: blur(6px);
+
+          padding: 20px;
+          margin-bottom: 20px;
+
+          border-radius: 14px;
+
+          box-shadow:
+            0 4px 12px rgba(0,0,0,0.08);
+
+          transition: transform 0.15s ease,
+                      box-shadow 0.15s ease;
+}
+
+        .post-card:hover,
+        .profile-card:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+            0 8px 20px rgba(0,0,0,0.12);
+}
 
         .post-author {
             font-weight: bold;
@@ -35,52 +75,72 @@
             margin-bottom: 10px;
         }
 
-        .like-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+        button {
+    background: #2563eb;
+    color: white;
 
-        .like-btn:hover {
-            background: #0056b3;
-        }
+    border: none;
+    padding: 8px 14px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-weight: 600;
+
+    transition:
+      background 0.15s ease,
+      transform 0.1s ease;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+button:active {
+    transform: scale(0.97);
+}
 
 
 
 
   
 .navbar {
-  background: #222;
-  padding: 14px 40px;
+    background: #000000;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 60px;
+    padding: 16px 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 80px;
+
+    box-shadow:
+      0 2px 8px rgba(0,0,0,0.2);
 }
 
 .logo {
-  color: white;
-  font-size: 22px;
-  font-weight: bold;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
 }
 
 .nav-links {
-  display: flex;
-  gap: 40px;
+    display: flex;
+    gap: 35px;
 }
 
 .nav-links a {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
+    color: #f9fafb;
+    text-decoration: none;
+    font-weight: 500;
+
+    transition: color 0.15s ease;
 }
 
 .nav-links a:hover {
-  text-decoration: underline;
+    color: #60a5fa;
 }
     </style>
 </head>

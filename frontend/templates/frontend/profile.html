@@ -6,76 +6,141 @@
 
     <style>
     body {
-      background: #f4f6f8;
-      font-family: Arial, Helvetica, sans-serif;
-      margin: 0;
-    }
+    background:
+      linear-gradient(
+        135deg,
+        #eef2ff 0%,
+        #f5f7fb 40%,
+        #e0e7ff 100%
+      );
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    margin: 0;
+
+    min-height: 100vh;
+}
+
+h1, h2 {
+    color: #111827;
+}
+
+p {
+    color: #374151;
+    line-height: 1.6;
+}
 
 .navbar {
-  background: #222;
-  padding: 14px 40px;
+    background: #000000;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 60px;
+    padding: 16px 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 60px;
+
+    box-shadow:
+      0 2px 8px rgba(0,0,0,0.2);
 }
 
 .logo {
-  color: white;
-  font-size: 22px;
-  font-weight: bold;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
 }
 
 .nav-links {
-  display: flex;
-  gap: 40px;
+    display: flex;
+    gap: 35px;
 }
 
 .nav-links a {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
+    color: #f9fafb;
+    text-decoration: none;
+    font-weight: 500;
+
+    transition: color 0.15s ease;
 }
 
 .nav-links a:hover {
-  text-decoration: underline;
+    color: #60a5fa;
 }
 
-    .container {
-      width: 600px;
-      margin: 40px auto;
-    }
+    .feed-container,
+        .container {
+          width: 700px;
+          margin: 40px auto;
+}
+        .post-card,
+        .profile-card {
+          background: white;
 
-    .profile-card,
-    .post-card {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-    }
+          backdrop-filter: blur(6px);
 
-    textarea {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-top: 10px;
-    }
+          padding: 20px;
+          margin-bottom: 20px;
 
-    button {
-      background: #007bff;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+          border-radius: 14px;
 
-    button:hover {
-      background: #0056b3;
-    }
+          box-shadow:
+            0 4px 12px rgba(0,0,0,0.08);
+
+          transition: transform 0.15s ease,
+                      box-shadow 0.15s ease;
+}
+
+        .post-card:hover,
+        .profile-card:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+            0 8px 20px rgba(0,0,0,0.12);
+}
+
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+
+    margin-top: 10px;
+
+    font-size: 15px;
+
+    resize: vertical;
+}
+
+button {
+    background: #2563eb;
+    color: white;
+
+    border: none;
+    padding: 8px 14px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-weight: 600;
+
+    transition:
+      background 0.15s ease,
+      transform 0.1s ease;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+
     </style>
 </head>
 
