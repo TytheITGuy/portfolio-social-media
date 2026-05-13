@@ -146,3 +146,8 @@ REST_FRAMEWORK = {
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 SECRET_KEY = "Facebook2.0"
+
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://portfolio-social-media.onrender.com"
+]
