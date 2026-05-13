@@ -127,7 +127,7 @@ STATICFILES_DIRS = [
 
 
 LOGOUT_REDIRECT_URL = "login"
-LOGIN_REDIRECT_URL = "feed"
+LOGIN_REDIRECT_URL = "/feed/"
 LOGIN_URL = "/login/"
 
 
@@ -145,3 +145,4 @@ REST_FRAMEWORK = {
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+SECRET_KEY = "Facebook2.0"
